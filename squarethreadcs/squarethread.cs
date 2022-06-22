@@ -80,7 +80,8 @@ begin:
 			Console.WriteLine("\nAll " + numthreads + " threads finished (0-" + target + ")");
 			Console.WriteLine("Cycles: " + cycles.ToString("N0"));
 			Console.WriteLine("Matches: " + matches.ToString("N0"));
-			Console.WriteLine("Total time: " + ((double)(s1.Elapsed.TotalMilliseconds / 1000)).ToString("0.000s") + " (" + totalmins.ToString("0.0m") + ")");
+			Console.WriteLine("Total time: " + ((double)(s1.Elapsed.TotalMilliseconds / 1000)).ToString("0.000s") + " (" 
+				+ totalmins.ToString("0.0m") + ")");
 			Console.WriteLine((cycles / (s1.Elapsed.TotalMilliseconds / 1000)).ToString("N0") + " cycles per second\n");
 			goto begin;
 		}
@@ -162,7 +163,8 @@ begin:
 				int percentComplete = (int)(0.5f + ((100f * matches) / tosolve));
 				if (percentComplete < 101)
 				{
-					Console.WriteLine("Solved " + matches.ToString() + " of " + tosolve.ToString() + " | n=" + (a + b + c) );
+					Console.WriteLine("Solved " + matches.ToString() + " of " + tosolve.ToString() + " | n=" + (a + b + c) 
+						+ " | tar=" + iTarget.ToString() + " | thr=" + gnumthreads.ToString());
 					string pleft = new string((char)35, percentComplete / 2);
 					string pright = new string((char)45, 50 - (percentComplete / 2));
 					Console.WriteLine("[" + pleft + pright + "] " + percentComplete.ToString() + "% ");
@@ -174,7 +176,8 @@ begin:
 					var minsleft = secondsleft / 60;
 					var minselapsed = (double)(s1.Elapsed.TotalMilliseconds / 1000) / 60;
 					Console.WriteLine("Cycles p/s     : " + cps.ToString("N0"));
-					Console.WriteLine("Time elapsed   : " + ((int)(s1.Elapsed.TotalMilliseconds / 1000)).ToString("0s") + " (" + minselapsed.ToString("0m") + ")");
+					Console.WriteLine("Time elapsed   : " + ((int)(s1.Elapsed.TotalMilliseconds / 1000)).ToString("0s") 
+						+ " (" + minselapsed.ToString("0m") + ")");
 					Console.WriteLine("Time remaining : " + secondsleft.ToString("0s") + " (" + minsleft.ToString("0m") + ") \n");
 					
 				}
