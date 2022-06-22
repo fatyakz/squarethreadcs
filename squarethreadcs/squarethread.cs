@@ -76,11 +76,11 @@ begin:
 			Console.WriteLine("Timer ticks p/s: " + frequency.ToString("N0"));
 			long nanosecPerTick = (1000L * 1000L * 1000L) / frequency;
 			Console.WriteLine("Timer accuracy within " + nanosecPerTick.ToString("N0") + " nanoseconds");
-
+			var totalmins = (s1.Elapsed.TotalMilliseconds / 1000) / 60;
 			Console.WriteLine("\nAll " + numthreads + " threads finished (0-" + target + ")");
 			Console.WriteLine("Cycles: " + cycles.ToString("N0"));
-			Console.WriteLine("Matches: " + matches);
-			Console.WriteLine("Total time: " + ((double)(s1.Elapsed.TotalMilliseconds / 1000)).ToString("0.000 s"));
+			Console.WriteLine("Matches: " + matches.ToString("N0"));
+			Console.WriteLine("Total time: " + ((double)(s1.Elapsed.TotalMilliseconds / 1000)).ToString("0.000s") + " (" + totalmins.ToString("0.0m") + ")");
 			Console.WriteLine((cycles / (s1.Elapsed.TotalMilliseconds / 1000)).ToString("N0") + " cycles per second\n");
 			goto begin;
 		}
@@ -162,7 +162,7 @@ begin:
 				int percentComplete = (int)(0.5f + ((100f * matches) / tosolve));
 				if (percentComplete < 101)
 				{
-					Console.WriteLine(" n=" + a + " | Solved " + matches.ToString() + " of " + tosolve.ToString());
+					Console.WriteLine("Solved " + matches.ToString() + " of " + tosolve.ToString() + " | n=" + (a + b + c) );
 					string pleft = new string((char)35, percentComplete / 2);
 					string pright = new string((char)45, 50 - (percentComplete / 2));
 					Console.WriteLine("[" + pleft + pright + "] " + percentComplete.ToString() + "% ");
