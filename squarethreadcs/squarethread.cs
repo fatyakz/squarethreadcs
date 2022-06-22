@@ -7,14 +7,17 @@ namespace squarethread
 		static readonly object tlock = new();
 		private static long cycles;
 		private static long matches;
-
+		private static long tosolve;
+		private static long tocycle;
+		private static long gnumthreads;	
+		private static Stopwatch s1 = Stopwatch.StartNew();
 		static void Main()
 		{
 begin:
 			matches = 0;
 			cycles = 0;	
 			int start = 1;
-
+			
 			Console.Write("Threads: ");
 			int numthreads = Convert.ToInt32(Console.ReadLine());
 			if (numthreads == 0) { return; }
@@ -24,11 +27,29 @@ begin:
 			if (numthreads > target) { return; }
 			int step = numthreads;
 
+			gnumthreads = numthreads;
+			tocycle = (long)Math.Pow(target, 9);
+
 			Thread mainThread = Thread.CurrentThread;
 			mainThread.Name = "Main Thread";
 
-			var s1 = Stopwatch.StartNew();
+			s1.Restart();
+			
+			
+
 			Thread[] threads = new Thread[numthreads];
+
+			int t = target + 1;
+			tosolve = (t % 12) switch
+			{
+				0 or 2 or 6 or 8 => ((t * t * t) - 16 * t * t + 76 * t - 96) / 6,
+				1 => ((t * t * t) - 16 * t * t + 73 * t - 58) / 6,
+				3 or 11 => ((t * t * t) - 16 * t * t + 73 * t - 102) / 6,
+				4 or 10 => ((t * t * t) - 16 * t * t + 76 * t - 112) / 6,
+				5 or 9 => ((t * t * t) - 16 * t * t + 73 * t - 90) / 6,
+				7 => ((t * t * t) - 16 * t * t + 73 * t - 70) / 6,
+				_ => 0,
+			};
 
 			for (int i = 0; i < numthreads; i++) {
 				threads[i] = new Thread(new ThreadStart(() => CountUp(target, step, start)));
@@ -47,11 +68,16 @@ begin:
 					}
 					if (!thread.IsAlive) { working = false; }
 				}
-
 			}
 
 			s1.Stop();
-			Console.WriteLine("All threads finished");
+
+			long frequency = Stopwatch.Frequency;
+			Console.WriteLine("Timer ticks p/s: " + frequency.ToString("N0"));
+			long nanosecPerTick = (1000L * 1000L * 1000L) / frequency;
+			Console.WriteLine("Timer accuracy within " + nanosecPerTick.ToString("N0") + " nanoseconds");
+
+			Console.WriteLine("\nAll " + numthreads + " threads finished (0-" + target + ")");
 			Console.WriteLine("Cycles: " + cycles.ToString("N0"));
 			Console.WriteLine("Matches: " + matches);
 			Console.WriteLine("Total time: " + ((double)(s1.Elapsed.TotalMilliseconds / 1000)).ToString("0.000 s"));
@@ -60,6 +86,7 @@ begin:
 		}
 		public static void CountUp(int iTarget, int iStep, int iStart)
 		{
+			long cps = 0;
 			long tcycles = 0;
 			long tmatches = 0;
 			long a = iStart + Convert.ToInt64(Thread.CurrentThread.Name);
@@ -125,6 +152,35 @@ begin:
 			// compare (h) with cells
 			if (h == i) { goto notequal; }
 			tmatches++;
+
+			Monitor.Enter(tlock);
+			try
+			{
+
+				//cycles += tcycles;
+				matches += 1;
+				int percentComplete = (int)(0.5f + ((100f * matches) / tosolve));
+				if (percentComplete < 101)
+				{
+					Console.WriteLine(" n=" + a + " | Solved " + matches.ToString() + " of " + tosolve.ToString());
+					string pleft = new string((char)35, percentComplete / 2);
+					string pright = new string((char)45, 50 - (percentComplete / 2));
+					Console.WriteLine("[" + pleft + pright + "] " + percentComplete.ToString() + "% ");
+
+					cps = (tcycles / (long)(s1.Elapsed.TotalMilliseconds / 1000));
+
+					var secondsleft = ((tocycle / gnumthreads) - tcycles) / cps;
+					cps = cps * gnumthreads;
+					var minsleft = secondsleft / 60;
+					var minselapsed = (double)(s1.Elapsed.TotalMilliseconds / 1000) / 60;
+					Console.WriteLine("Cycles p/s     : " + cps.ToString("N0"));
+					Console.WriteLine("Time elapsed   : " + ((int)(s1.Elapsed.TotalMilliseconds / 1000)).ToString("0s") + " (" + minselapsed.ToString("0m") + ")");
+					Console.WriteLine("Time remaining : " + secondsleft.ToString("0s") + " (" + minsleft.ToString("0m") + ") \n");
+					
+				}
+			}
+			finally { Monitor.Exit(tlock); }
+
 		notequal:
 			tcycles += 1;
 
@@ -167,7 +223,7 @@ begin:
 			try
 			{
 				cycles += tcycles;
-				matches += tmatches;
+				//matches += tmatches;
 			}
 			finally { Monitor.Exit(tlock); }
 
